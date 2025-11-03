@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Obras;
 use App\Filament\Resources\Obras\Pages\CreateObra;
 use App\Filament\Resources\Obras\Pages\EditObra;
 use App\Filament\Resources\Obras\Pages\ListObras;
+use App\Filament\Resources\Obras\RelationManagers\ObraElementoFundiblesRelationManager;
 use App\Filament\Resources\Obras\Schemas\ObraForm;
 use App\Filament\Resources\Obras\Tables\ObrasTable;
 use App\Models\Obra;
@@ -35,7 +36,7 @@ class ObraResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ObraElementoFundiblesRelationManager::class
         ];
     }
 
