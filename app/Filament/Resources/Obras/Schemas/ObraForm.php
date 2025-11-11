@@ -20,6 +20,9 @@ class ObraForm
                                             ->label('Encargado de Obra')
                                             ->relationship('encargadoObra', 'name')
                                             ->required(),
+                                            TextInput::make('cantidad_semanas')
+                    ->numeric()
+                    ->required(),
             ]);
     }
 }

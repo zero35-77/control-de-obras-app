@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('codigo');
             $table->string('localizacion');
             $table->foreignIdFor(EncargadoObra::class)->constrained();
+            $table->integer('cantidad_semanas');
             $table->timestamps();
         });
     }

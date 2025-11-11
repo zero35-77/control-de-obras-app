@@ -69,6 +69,10 @@ class ObraElementoFundiblesRelationManager extends RelationManager
                     ->options(['Realizado' => 'Realizado', 'Cancelado' => 'Cancelado', 'Pendiente' => 'Pendiente'])
                     ->default('Pendiente')
                     ->required(),
+                TextInput::make('semana_inicio')
+                    ->numeric(),
+                TextInput::make('semana_fin')
+                    ->numeric(),
             ]);
     }
 

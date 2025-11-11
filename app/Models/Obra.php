@@ -7,7 +7,7 @@ use App\Models\ObraElementoFundible;
 
 class Obra extends Model
 {
-    protected $fillable = ['codigo', 'localizacion', 'encargado_obra_id'];
+    protected $fillable = ['codigo', 'localizacion', 'encargado_obra_id', 'cantidad_semanas'];
     public function encargadoObra()
     {
         return $this->belongsTo(EncargadoObra::class);
