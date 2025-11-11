@@ -28,6 +28,8 @@ return new class extends Migration
             $table->float('resultado_ensayo_obtenido')->nullable();
             $table->string('comentarios')->nullable();
             $table->enum('status', ['Realizado', 'Cancelado', 'Pendiente'])->default('Pendiente');
+            $table->integer('semana_inicio')->nullable();
+            $table->integer('semana_fin')->nullable();
             $table->timestamps();
         });
     }

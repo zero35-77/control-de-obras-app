@@ -21,6 +21,8 @@ class ObraElementoFundible extends Model
         'resultado_ensayo_obtenido',
         'comentarios',
         'status',
+        'semana_inicio',
+        'semana_fin'
     ]; 
     public function obra()
     {
