@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamp('fecha_hora_fundicion')->nullable();
             $table->foreignIdFor(Obrero::class)->nullable();
             $table->string('numero_boleta')->nullable();
-            $table->date('fecha_verificacion')->nullable();
+            $table->integer('dias_ensayo')->nullable();
             $table->float('cantidad_psi_utilizado')->nullable();
             $table->float('resultado_ensayo_requerido')->nullable();
             $table->float('resultado_ensayo_obtenido')->nullable();
@@ -30,6 +30,7 @@ return new class extends Migration
             $table->enum('status', ['Realizado', 'Cancelado', 'Pendiente'])->default('Pendiente');
             $table->integer('semana_inicio')->nullable();
             $table->integer('semana_fin')->nullable();
+            $table->enum('gestion', ['Empresa', 'Obra'])->default('Obra');
             $table->timestamps();
         });
     }

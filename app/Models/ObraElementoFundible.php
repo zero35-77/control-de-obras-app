@@ -15,14 +15,15 @@ class ObraElementoFundible extends Model
         'fecha_hora_fundicion',
         'obrero_id',
         'numero_boleta',
-        'fecha_verificacion',
+        'dias_ensayo',
         'cantidad_psi_utilizado',
         'resultado_ensayo_requerido',
         'resultado_ensayo_obtenido',
         'comentarios',
         'status',
         'semana_inicio',
-        'semana_fin'
+        'semana_fin',
+        'gestion',
     ]; 
     public function obra()
     {

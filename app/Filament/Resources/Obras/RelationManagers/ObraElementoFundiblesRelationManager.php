@@ -22,6 +22,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Carbon\Carbon;
+use Dom\Text;
 use Filament\Notifications\Notification;
 
 
@@ -34,7 +35,8 @@ class ObraElementoFundiblesRelationManager extends RelationManager
         return $schema
             ->components([
                 Select::make('elemento_fundible_id')
-                ->options(ElementoFundible::pluck('name', 'id')->toArray()),
+                ->options(ElementoFundible::pluck('name', 'id')->toArray())
+                ->label('Elemento Fudido'),
                 DateTimePicker::make('fecha_hora_fundicion')
                     ->native(false)
                     ->live()
@@ -43,12 +45,26 @@ class ObraElementoFundiblesRelationManager extends RelationManager
                         $this->calculateAndSetResults($set, $get);
                     }),
                 Select::make('obrero_id')
-                ->options(Obrero::pluck('name', 'id')->toArray()),
+                ->options(Obrero::pluck('name', 'id')->toArray())
+                ->label('Encargado de Fundición'),
                 TextInput::make('numero_boleta'),
-                DatePicker::make('fecha_verificacion')
-                    ->native(false)
+                Select::make('gestion')
+                    ->options([
+                        'Empresa' => 'Contratado a empresa', 
+                        'Obra' => 'Hecho en obra'
+                    ])
+                    ->label('Tipo de Gestión')
+                    ->required(),
+                Select::make('dias_ensayo')
+                    ->options(collect(ConcreteHardness::cases())
+                        ->mapWithKeys(function ($case) {
+                            $percentageLabel = $case->percentage() * 100;
+                            return [$case->value => "{$case->value} días ({$percentageLabel}%)"];
+                        })
+                        ->toArray())
+                    ->label('Días de Ensayo (Resistencia Esperada)')
+                    ->required()
                     ->live()
-                    ->displayFormat('d/m/Y')
                     ->afterStateUpdated(function (callable $set, callable $get) {
                         $this->calculateAndSetResults($set, $get);
                     }),
@@ -68,7 +84,8 @@ class ObraElementoFundiblesRelationManager extends RelationManager
                 Select::make('status')
                     ->options(['Realizado' => 'Realizado', 'Cancelado' => 'Cancelado', 'Pendiente' => 'Pendiente'])
                     ->default('Pendiente')
-                    ->required(),
+                    ->required()
+                    ->label('Estado'),
                 TextInput::make('semana_inicio')
                     ->numeric(),
                 TextInput::make('semana_fin')
@@ -94,8 +111,9 @@ class ObraElementoFundiblesRelationManager extends RelationManager
                     ->searchable(),
                 TextColumn::make('numero_boleta')
                     ->searchable(),
-                TextColumn::make('fecha_verificacion')
-                    ->date()
+                TextColumn::make('gestion'),
+                TextColumn::make('dias_ensayo')
+                    ->numeric()
                     ->sortable(),
                 TextColumn::make('cantidad_psi_utilizado')
                     ->numeric()
@@ -150,25 +168,19 @@ class ObraElementoFundiblesRelationManager extends RelationManager
      */
     private function calculateAndSetResults(callable $set, callable $get): void
     {
-        $fechaFundState = $get('fecha_hora_fundicion');
-        $fechaVerState  = $get('fecha_verificacion');
-        $cantidadState  = $get('cantidad_psi_utilizado');
+        // CAMBIO: Obtenemos los días de ensayo del nuevo Select en lugar de calcularlos con fechas.
+        $diasEnsayoState = $get('dias_ensayo');
+        $cantidadState   = $get('cantidad_psi_utilizado');
 
-        if (! $fechaFundState || ! $fechaVerState) {
+        // Verificamos que se haya seleccionado un valor para los días de ensayo.
+        if (! $diasEnsayoState) {
             $set('resultado_ensayo_requerido', null);
             return;
         }
 
-        try {
-            $fechaFund = Carbon::parse($fechaFundState);
-            $fechaVer  = Carbon::parse($fechaVerState);
-        } catch (\Exception $e) {
-            $set('resultado_ensayo_requerido', null);
-            return;
-        }
+        $dias = (int) $diasEnsayoState;
 
-        $dias = $fechaFund->startOfDay()->diffInDays($fechaVer->startOfDay());
-
+        // Verificación de la cantidad de PSI
         if (! is_numeric($cantidadState) || $cantidadState === '') {
             $set('resultado_ensayo_requerido', null);
             return;
@@ -176,6 +188,7 @@ class ObraElementoFundiblesRelationManager extends RelationManager
 
         $cantidad = (float) $cantidadState;
 
+        // Utilizamos la función del Enum para obtener el porcentaje basado en los días seleccionados
         $percentEnum = ConcreteHardness::selectByDays($dias);
         $multiplier = $percentEnum->percentage(); 
 
@@ -183,7 +196,8 @@ class ObraElementoFundiblesRelationManager extends RelationManager
 
         $set('resultado_ensayo_requerido', round($resultado, 2));
     }
-        private function checkAndFlash($record): void
+    
+    private function checkAndFlash($record): void
     {
         if (! isset($record->resultado_ensayo_requerido) || ! isset($record->resultado_ensayo_obtenido)) {
             return;
